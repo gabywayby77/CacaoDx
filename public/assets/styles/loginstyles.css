@@ -1,0 +1,140 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #d34c4e;
+  --primary-color-dark: #b63c3e;
+  --text-light: #ffffff;
+  --transition-speed: 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', Helvetica, sans-serif;
+}
+
+/* Body with background image */
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 8%;
+  background: url("../pics/cacao_wallpaper.png") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: var(--text-light);
+}
+
+/* Dark overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 0;
+}
+
+/* Login container */
+.log-in {
+  position: relative;
+  z-index: 1;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Heading */
+.text-wrapper-3 {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 40px;
+  margin-bottom: 40px;
+}
+
+/* Input fields */
+.input-field {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 20px;
+  padding: 0 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  outline: none;
+  background-color: rgba(255,255,255,0.1);
+  color: var(--text-light);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: border-color var(--transition-speed),
+              background-color var(--transition-speed);
+}
+
+.input-field::placeholder {
+  color: rgba(255,255,255,0.7);
+  font-weight: 400;
+}
+
+.input-field:focus {
+  border-color: var(--primary-color);
+  background-color: rgba(255,255,255,0.2);
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  height: 50px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  transition: background-color var(--transition-speed),
+              transform var(--transition-speed);
+}
+
+.btn:hover {
+  background-color: var(--primary-color-dark);
+  transform: translateY(-2px);
+}
+
+.btn.secondary {
+  background-color: rgba(255,255,255,0.15);
+  color: var(--text-light);
+}
+
+.btn.secondary:hover {
+  background-color: rgba(255,255,255,0.3);
+}
+
+/* Alerts */
+.alert {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+/* Mobile Fix */
+@media (max-width: 768px) {
+  body {
+    justify-content: center;
+    padding-left: 0;
+  }
+}

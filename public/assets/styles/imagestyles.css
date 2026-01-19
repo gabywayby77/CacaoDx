@@ -1,0 +1,101 @@
+/* imagestyles.css */
+
+/* General content layout */
+.content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 20px;
+}
+
+/* Folder card */
+.folder-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.folder-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Folder title */
+.folder-card h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #d34c4e;
+  text-transform: capitalize;
+}
+
+/* Folder preview images */
+.folder-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.folder-preview img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  transition: transform 0.2s ease;
+}
+
+.folder-preview img:hover {
+  transform: scale(1.1);
+}
+
+/* No images text */
+.folder-preview p {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+/* Upload form */
+.folder-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.folder-card input[type="file"] {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.folder-card .add-btn {
+  background-color: #d34c4e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.folder-card .add-btn i {
+  margin-right: 6px;
+}
+
+.folder-card .add-btn:hover {
+  background-color: #b63c3e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .folder-preview img {
+      width: 60px;
+      height: 60px;
+  }
+}

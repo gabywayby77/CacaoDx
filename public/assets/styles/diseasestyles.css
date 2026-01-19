@@ -1,0 +1,148 @@
+/* diseasestyles.css - matches diagnosisstyles.css look and behavior */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------- Root Variables --------------------------- */
+:root{
+  --primary: #d34c4e;
+  --primary-dark: #b63c3e;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --card: #f9f9f9;
+  --text: #111;
+  --muted: #666;
+  --border: #e5e5e5;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --transition: 280ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* --------------------------- Reset --------------------------- */
+*{ box-sizing: border-box; margin:0; padding:0; }
+html,body{ height:100%; font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+/* --------------------------- Page Wrapper --------------------------- */
+.page-wrapper { display:flex; min-height:100vh; }
+
+/* --------------------------- Main Content --------------------------- */
+.main-content{
+  flex:1; padding:26px; display:flex; flex-direction:column; gap:20px;   animation: fadeIn 0.35s ease-in; /* add this */
+
+}
+
+.navbar-row {
+  transition: background var(--transition), transform var(--transition);
+}
+
+.navbar-row:hover {
+  transform: translateY(-1px);
+  background: rgba(211,76,78,0.04);
+}
+
+
+/* header */
+.header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; }
+.page-title{ font-size:28px; font-weight:800; color:var(--primary); letter-spacing:0.3px; }
+
+/* header-right controls */
+.header-right{ display:flex; align-items:center; gap:18px; }
+.icon-btn{ background:transparent; border:0; color:var(--muted); font-size:18px; cursor:pointer; padding:6px; border-radius:8px; transition:all var(--transition); }
+.icon-btn:hover{ color:var(--primary); transform:scale(1.08); }
+.profile-inline{ display:flex; align-items:center; gap:10px; }
+.profile-inline img{ width:40px; height:40px; border-radius:50%; border:2px solid var(--primary); object-fit:cover; }
+
+/* --------------------------- Logs / Disease Section --------------------------- */
+.logs-section{ display:flex; flex-direction:column; gap:12px; }
+.section-header h2{
+  font-size:22px; font-weight:700; color:var(--primary-dark);
+  margin:0; padding-left:10px; border-left:4px solid var(--primary);
+}
+
+/* Scroll container */
+.diagnosis-scroll{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* inner area containing rows */
+.diagnosis-inner{
+  min-width: 100%;
+  border-radius:var(--radius-md);
+  background:var(--surface);
+  box-shadow:0 4px 10px rgba(16,24,40,0.04);
+}
+
+/* Header row (sticky) */
+.header-row{
+  display:flex; gap:0; align-items:center;
+  background:#fafafa; color:var(--muted); font-weight:700; text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:5;
+}
+
+.header-row .col{
+  padding:14px 16px; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  border-right:1px solid var(--border);
+  background:linear-gradient(180deg,#fafafa,#fafafa);
+}
+
+/* Data rows */
+.navbar-row{
+  display:flex; gap:0; align-items:flex-start;
+  border-bottom:1px solid var(--border);
+  transition:background var(--transition), transform var(--transition);
+  background:transparent;
+}
+.navbar-row:hover{ background:rgba(211,76,78,0.04); transform:translateY(-1px); }
+
+.col{
+  padding:12px 16px; font-size:14px; color:var(--text);
+  flex:1 1 0;
+  min-width:0;
+  overflow:visible;
+  white-space:normal;
+  word-break:break-word;
+  border-right:1px solid var(--border);
+}
+.header-row .col:last-child,
+.navbar-row .col:last-child{ border-right:none; }
+
+/* Column widths for disease.php */
+/* Column widths for disease.php - spread out more */
+.header-row .col:nth-child(1), .navbar-row .col:nth-child(1){ flex:1 0 0 80px; }   /* ID */
+.header-row .col:nth-child(2), .navbar-row .col:nth-child(2){ flex:0 1 0 260px; }  /* Name */
+.header-row .col:nth-child(3), .navbar-row .col:nth-child(3){ flex:0 0 1 180px; }  /* Type */
+.header-row .col:nth-child(4), .navbar-row .col:nth-child(4){ flex:1 0 0 240px; }  /* Cause */
+.header-row .col:nth-child(5), .navbar-row .col:nth-child(5){ flex:0 0 0 220px; }  /* Plant Part */
+
+
+/* Empty row style */
+.navbar-row.empty .col{
+  text-align:center; color:var(--muted); font-style:italic; padding:18px 16px;
+}
+
+/* Alternating rows */
+.navbar-row:nth-child(even) { background-color: #fff5f5 !important; }
+.navbar-row:nth-child(odd) { background-color: #ffffff !important; }
+.navbar-row:hover { background-color: #ffe1e1 !important; }
+
+/* Scrollbar */
+.diagnosis-scroll::-webkit-scrollbar{ height:10px; }
+.diagnosis-scroll::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg,var(--primary),var(--primary-dark));
+  border-radius:8px;
+}
+.diagnosis-scroll::-webkit-scrollbar-track{ background:transparent; }
+
+/* Responsive */
+
+.disease-inner {
+  min-width: 100%;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 4px 10px rgba(16,24,40,0.04);
+  padding: 30px; /* top, right, bottom, left */
+}
+
