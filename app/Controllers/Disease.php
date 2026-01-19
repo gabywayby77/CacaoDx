@@ -12,10 +12,11 @@ class Disease extends Controller
     public function __construct()
     {
         $this->diseaseModel = new DiseaseModel();
+        helper('auth'); // Load auth helper
     }
 
     /**
-     * Show disease list
+     * Show disease list (Available to all users)
      */
     public function index()
     {
@@ -27,10 +28,15 @@ class Disease extends Controller
     }
 
     /**
-     * Store new disease
+     * Store new disease (ADMIN ONLY)
      */
     public function store()
     {
+        if (!can_edit()) {
+            return redirect()->back()
+                ->with('error', 'Access denied. Admin privileges required.');
+        }
+
         $rules = [
             'name'           => 'required|min_length[3]',
             'type'           => 'required',
@@ -38,7 +44,7 @@ class Disease extends Controller
             'plant_part_id'  => 'required',
         ];
 
-        if (! $this->validate($rules)) {
+        if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $this->validator->listErrors());
@@ -56,10 +62,15 @@ class Disease extends Controller
     }
 
     /**
-     * Update disease
+     * Update disease (ADMIN ONLY)
      */
     public function update()
     {
+        if (!can_edit()) {
+            return redirect()->back()
+                ->with('error', 'Access denied. Admin privileges required.');
+        }
+
         $rules = [
             'id'             => 'required|is_natural_no_zero',
             'name'           => 'required|min_length[3]',
@@ -68,7 +79,7 @@ class Disease extends Controller
             'plant_part_id'  => 'required',
         ];
 
-        if (! $this->validate($rules)) {
+        if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $this->validator->listErrors());
@@ -88,13 +99,18 @@ class Disease extends Controller
     }
 
     /**
-     * Delete disease
+     * Delete disease (ADMIN ONLY)
      */
     public function delete()
     {
+        if (!can_edit()) {
+            return redirect()->back()
+                ->with('error', 'Access denied. Admin privileges required.');
+        }
+
         $id = $this->request->getPost('id');
 
-        if (! $id) {
+        if (!$id) {
             return redirect()->back()
                 ->with('error', 'Invalid disease ID.');
         }

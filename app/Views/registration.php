@@ -19,6 +19,12 @@
 
             <h3 class="text-center mb-5">Registration Form</h3>
 
+            <?php if (session()->getFlashdata('error')): ?>
+              <div class="alert alert-danger">
+                <?= session()->getFlashdata('error') ?>
+              </div>
+            <?php endif; ?>
+
             <form action="<?= site_url('registration'); ?>" method="post">
 
               <div class="row">
@@ -49,6 +55,19 @@
                 <div class="col-md-6 mb-4">
                   <label class="form-label">Password</label>
                   <input type="password" name="password" class="form-control form-control-lg" required>
+                </div>
+
+                <!-- ✅ NEW: Role Selection -->
+                <div class="col-md-6 mb-4">
+                  <label class="form-label" for="role">Account Type</label>
+                  <select name="role" id="role" class="form-control form-control-lg" required style="appearance: auto; -webkit-appearance: menulist; -moz-appearance: menulist; background-color: white; color: #000;">
+                    <option value="" style="color: #000;">Select Role</option>
+                    <option value="user" style="color: #000;">Regular User</option>
+                    <option value="admin" style="color: #000;">Administrator</option>
+                  </select>
+                  <small class="text-muted d-block mt-1">
+                    Regular users have read-only access. Admins can manage content.
+                  </small>
                 </div>
               </div>
 

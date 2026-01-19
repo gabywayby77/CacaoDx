@@ -42,11 +42,55 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
           <button class="icon-btn"><i class="fas fa-bell"></i></button>
         </div>
         <div class="profile-inline">
-          <img src="https://via.placeholder.com/40" class="profile-pic">
+          <img src="https://ui-avatars.com/api/?name=<?= urlencode($userName) ?>&size=40" class="profile-pic">
           <span class="username"><?= esc($userName) ?></span>
         </div>
       </div>
     </header>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="search-filter-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search by pest name or scientific name..." 
+          onkeyup="filterPests()"
+        >
+        <button class="clear-search" id="clearSearch" onclick="clearSearch()" style="display: none;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="filter-group">
+        <label for="familyFilter">
+          <i class="fas fa-sitemap"></i> Family:
+        </label>
+        <select id="familyFilter" onchange="filterPests()">
+          <option value="">All Families</option>
+          <?php 
+          // Get unique pest families
+          $families = array_unique(array_column($pests ?? [], 'family'));
+          foreach ($families as $family): 
+            if (!empty($family)):
+          ?>
+            <option value="<?= strtolower(esc($family)) ?>"><?= esc($family) ?></option>
+          <?php 
+            endif;
+          endforeach; 
+          ?>
+        </select>
+      </div>
+
+      <button class="reset-filters" onclick="resetFilters()">
+        <i class="fas fa-redo"></i> Reset
+      </button>
+
+      <button class="btn add-btn" onclick="openPestModal()">
+        <i class="fas fa-bug"></i> Add Pest
+      </button>
+    </div>
 
     <!-- Pests Section -->
     <section class="logs-section">
@@ -55,9 +99,11 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
         <!-- Section Header -->
         <div class="section-header">
           <h2>Pest List</h2>
-          <button class="btn add-btn" onclick="openPestModal()">
-            <i class="fas fa-bug"></i> Add Pest
-          </button>
+        </div>
+
+        <!-- Results counter -->
+        <div class="results-info">
+          Showing <strong id="visibleCount"><?= !empty($pests) ? count($pests) : 0 ?></strong> of <strong id="totalCount"><?= !empty($pests) ? count($pests) : 0 ?></strong> pests
         </div>
 
         <!-- Table -->
@@ -75,8 +121,11 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
           </div>
 
           <?php if (!empty($pests)): ?>
-            <?php foreach ($pests as $index => $pest): ?>
-              <div class="navbar-row <?= ($index % 2) ? 'alt-row' : '' ?>">
+            <?php foreach ($pests as $pest): ?>
+              <div class="navbar-row pest-row"
+                   data-name="<?= strtolower(esc($pest['name'])) ?>"
+                   data-scientific="<?= strtolower(esc($pest['scientific_name'])) ?>"
+                   data-family="<?= strtolower(esc($pest['family'])) ?>">
                 <div class="col"><?= esc($pest['id']) ?></div>
                 <div class="col"><?= esc($pest['name']) ?></div>
                 <div class="col"><?= esc($pest['scientific_name']) ?></div>
@@ -86,25 +135,24 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
                 <div class="col"><?= esc($pest['plant_part_id']) ?></div>
 
                 <div class="col actions">
-  <button class="action-btn edit-btn"
-    onclick="openEditPestModal(
-      '<?= $pest['id'] ?>',
-      '<?= esc($pest['name']) ?>',
-      '<?= esc($pest['scientific_name']) ?>',
-      '<?= esc($pest['family']) ?>',
-      '<?= esc($pest['description']) ?>',
-      '<?= esc($pest['damage']) ?>',
-      '<?= $pest['plant_part_id'] ?>'
-    )">
-    <i class="fas fa-pen"></i>
-  </button>
+                  <button class="action-btn edit-btn"
+                    onclick="openEditPestModal(
+                      '<?= $pest['id'] ?>',
+                      '<?= esc($pest['name']) ?>',
+                      '<?= esc($pest['scientific_name']) ?>',
+                      '<?= esc($pest['family']) ?>',
+                      '<?= esc($pest['description']) ?>',
+                      '<?= esc($pest['damage']) ?>',
+                      '<?= $pest['plant_part_id'] ?>'
+                    )">
+                    <i class="fas fa-pen"></i>
+                  </button>
 
-  <button class="action-btn delete-btn"
-    onclick="openDeletePestModal('<?= $pest['id'] ?>')">
-    <i class="fas fa-trash"></i>
-  </button>
-</div>
-
+                  <button class="action-btn delete-btn"
+                    onclick="openDeletePestModal('<?= $pest['id'] ?>')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </div>
             <?php endforeach; ?>
           <?php else: ?>
@@ -112,6 +160,14 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
               <div class="col" style="text-align:center;">No pests found.</div>
             </div>
           <?php endif; ?>
+
+          <!-- No results message -->
+          <div class="navbar-row empty no-results" style="display: none;">
+            <div class="col">
+              <i class="fas fa-search" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+              <p>No pests found matching your search criteria</p>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -162,6 +218,66 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
     }
   });
 })();
+
+// ================= SEARCH & FILTER ================= 
+
+function filterPests() {
+  const searchInput = document.getElementById('searchInput').value.toLowerCase();
+  const familyFilter = document.getElementById('familyFilter').value.toLowerCase();
+  const clearBtn = document.getElementById('clearSearch');
+  
+  const rows = document.querySelectorAll('.pest-row');
+  const noResults = document.querySelector('.no-results');
+  let visibleCount = 0;
+  const totalCount = rows.length;
+  
+  // Show/hide clear button
+  clearBtn.style.display = searchInput ? 'flex' : 'none';
+  
+  rows.forEach(row => {
+    const name = row.dataset.name;
+    const scientific = row.dataset.scientific;
+    const family = row.dataset.family;
+    
+    const matchesSearch = name.includes(searchInput) || scientific.includes(searchInput);
+    const matchesFamily = !familyFilter || family === familyFilter;
+    
+    if (matchesSearch && matchesFamily) {
+      row.style.display = 'flex';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Update counters
+  document.getElementById('visibleCount').textContent = visibleCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  
+  // Show/hide no results message
+  if (visibleCount === 0) {
+    noResults.style.display = 'flex';
+  } else {
+    noResults.style.display = 'none';
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterPests();
+  document.getElementById('searchInput').focus();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('familyFilter').value = '';
+  filterPests();
+}
+
+// Real-time search feedback
+document.getElementById('searchInput').addEventListener('input', function() {
+  filterPests();
+});
 </script>
 
 <!-- ADD PEST MODAL -->
@@ -218,6 +334,7 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
   </div>
 </div>
+
 <!-- EDIT PEST MODAL -->
 <div id="editPestModal" class="modal-overlay">
   <div class="modal-card">
@@ -298,7 +415,6 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
   </div>
 </div>
 
-
 <script>
 function openPestModal() {
   document.getElementById('pestModal').classList.add('show');
@@ -306,9 +422,7 @@ function openPestModal() {
 function closePestModal() {
   document.getElementById('pestModal').classList.remove('show');
 }
-</script>
 
-<script>
 function openEditPestModal(id, name, sci, family, desc, damage, plant) {
   document.getElementById('edit_id').value = id;
   document.getElementById('edit_name').value = name;
@@ -333,7 +447,6 @@ function closeDeletePestModal() {
   document.getElementById('deletePestModal').classList.remove('show');
 }
 </script>
-
 
 </body>
 </html>

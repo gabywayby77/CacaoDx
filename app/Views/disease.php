@@ -10,7 +10,6 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
   <!-- CSS -->
   <link rel="stylesheet" href="<?= base_url('assets/styles/popup.css'); ?>">
-  <link rel="stylesheet" href="<?= base_url('assets/styles/userstyles.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/styles/diseasestyles.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/styles/sidebar.css'); ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -40,11 +39,51 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
         </div>
 
         <div class="profile-inline">
-          <img src="https://via.placeholder.com/40">
+          <img src="https://ui-avatars.com/api/?name=<?= urlencode($userName) ?>&size=40">
           <span class="username"><?= esc($userName) ?></span>
         </div>
       </div>
     </header>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="search-filter-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search by disease name or cause..." 
+          onkeyup="filterDiseases()"
+        >
+        <button class="clear-search" id="clearSearch" onclick="clearSearch()" style="display: none;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="filter-group">
+        <label for="typeFilter">
+          <i class="fas fa-tag"></i> Type:
+        </label>
+        <select id="typeFilter" onchange="filterDiseases()">
+          <option value="">All Types</option>
+          <?php 
+          // Get unique disease types
+          $types = array_unique(array_column($diseases ?? [], 'type'));
+          foreach ($types as $type): 
+          ?>
+            <option value="<?= strtolower(esc($type)) ?>"><?= esc($type) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <button class="reset-filters" onclick="resetFilters()">
+        <i class="fas fa-redo"></i> Reset
+      </button>
+
+      <button class="add-btn" onclick="openAddDiseaseModal()">
+        <i class="fas fa-plus"></i> Add Disease
+      </button>
+    </div>
 
     <!-- DISEASES -->
     <section class="logs-section">
@@ -52,9 +91,11 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
         <div class="section-header">
           <h2>Disease List</h2>
-          <button class="add-btn" onclick="openAddDiseaseModal()">
-            <i class="fas fa-plus"></i> Add Disease
-          </button>
+        </div>
+
+        <!-- Results counter -->
+        <div class="results-info">
+          Showing <strong id="visibleCount"><?= !empty($diseases) ? count($diseases) : 0 ?></strong> of <strong id="totalCount"><?= !empty($diseases) ? count($diseases) : 0 ?></strong> diseases
         </div>
 
         <div class="disease-inner">
@@ -70,7 +111,10 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
           <?php if (!empty($diseases)): ?>
             <?php foreach ($diseases as $disease): ?>
-              <div class="navbar-row">
+              <div class="navbar-row disease-row"
+                   data-name="<?= strtolower(esc($disease['name'])) ?>"
+                   data-type="<?= strtolower(esc($disease['type'])) ?>"
+                   data-cause="<?= strtolower(esc($disease['cause'])) ?>">
                 <div class="col"><?= esc($disease['id']) ?></div>
                 <div class="col"><?= esc($disease['name']) ?></div>
                 <div class="col"><?= esc($disease['type']) ?></div>
@@ -101,6 +145,14 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
               <div class="col" style="text-align:center;">No diseases found.</div>
             </div>
           <?php endif; ?>
+
+          <!-- No results message -->
+          <div class="navbar-row empty no-results" style="display: none;">
+            <div class="col">
+              <i class="fas fa-search" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+              <p>No diseases found matching your search criteria</p>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -228,6 +280,67 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
   };
 })();
 
+// ================= SEARCH & FILTER ================= 
+
+function filterDiseases() {
+  const searchInput = document.getElementById('searchInput').value.toLowerCase();
+  const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
+  const clearBtn = document.getElementById('clearSearch');
+  
+  const rows = document.querySelectorAll('.disease-row');
+  const noResults = document.querySelector('.no-results');
+  let visibleCount = 0;
+  const totalCount = rows.length;
+  
+  // Show/hide clear button
+  clearBtn.style.display = searchInput ? 'flex' : 'none';
+  
+  rows.forEach(row => {
+    const name = row.dataset.name;
+    const type = row.dataset.type;
+    const cause = row.dataset.cause;
+    
+    const matchesSearch = name.includes(searchInput) || cause.includes(searchInput);
+    const matchesType = !typeFilter || type === typeFilter;
+    
+    if (matchesSearch && matchesType) {
+      row.style.display = 'flex';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Update counters
+  document.getElementById('visibleCount').textContent = visibleCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  
+  // Show/hide no results message
+  if (visibleCount === 0) {
+    noResults.style.display = 'flex';
+  } else {
+    noResults.style.display = 'none';
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterDiseases();
+  document.getElementById('searchInput').focus();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('typeFilter').value = '';
+  filterDiseases();
+}
+
+// Real-time search feedback
+document.getElementById('searchInput').addEventListener('input', function() {
+  filterDiseases();
+});
+
+// Modal functions
 function openAddDiseaseModal() {
   addDiseaseModal.classList.add('show');
 }

@@ -3,8 +3,9 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use CodeIgniter\Controller;
 
-class Registration extends BaseController
+class Registration extends Controller
 {
     public function index()
     {
@@ -15,30 +16,43 @@ class Registration extends BaseController
     {
         $userModel = new UserModel();
 
-        // Get the plain password
-        $plainPassword = $this->request->getPost('password');
-        
-        // Hash it
-        $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
+        // Validation rules
+        $rules = [
+            'first_name'     => 'required|min_length[2]',
+            'last_name'      => 'required|min_length[2]',
+            'email'          => 'required|valid_email|is_unique[users.email]',
+            'contact_number' => 'required|min_length[10]',
+            'password'       => 'required|min_length[6]',
+            'role'           => 'required|in_list[user,admin]', // ✅ Validate role
+        ];
 
-        // 🔍 TEMPORARY DEBUG - Remove after testing
-        log_message('info', '=== REGISTRATION DEBUG ===');
-        log_message('info', 'Plain password: ' . $plainPassword);
-        log_message('info', 'Hashed password: ' . $hashedPassword);
-        log_message('info', 'Hash length: ' . strlen($hashedPassword));
+        if (!$this->validate($rules)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $this->validator->listErrors());
+        }
 
+        // Get form data
         $data = [
             'first_name'     => $this->request->getPost('first_name'),
             'last_name'      => $this->request->getPost('last_name'),
             'email'          => $this->request->getPost('email'),
-            'password'       => $hashedPassword,
-            'user_type_id'   => 1,
             'contact_number' => $this->request->getPost('contact_number'),
-            'registered_at'  => date('Y-m-d H:i:s')
+            'password'       => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'role'           => $this->request->getPost('role'), // ✅ Store selected role
+            'user_type_id'   => $this->request->getPost('role') === 'admin' ? 1 : 2, // Optional: sync with user_type_id
+            'registered_at'  => date('Y-m-d H:i:s'),
+            'status'         => 'active',
         ];
 
-        $userModel->insert($data);
-
-        return redirect()->to('/login')->with('success', 'Account created! Please login.');
+        // Insert user
+        if ($userModel->insert($data)) {
+            return redirect()->to(base_url('login'))
+                ->with('success', 'Registration successful! Please login.');
+        } else {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Registration failed. Please try again.');
+        }
     }
 }

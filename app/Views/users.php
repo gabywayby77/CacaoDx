@@ -45,15 +45,63 @@ $userName = $userName ?? (session()->get('first_name').' '.session()->get('last_
       </div>
     </header>
 
+    <!-- SEARCH & FILTER BAR -->
+    <div class="search-filter-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search by name or email..." 
+          onkeyup="filterUsers()"
+        >
+        <button class="clear-search" id="clearSearch" onclick="clearSearch()" style="display: none;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="filter-group">
+        <label for="roleFilter">
+          <i class="fas fa-user-tag"></i> Role:
+        </label>
+        <select id="roleFilter" onchange="filterUsers()">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="statusFilter">
+          <i class="fas fa-toggle-on"></i> Status:
+        </label>
+        <select id="statusFilter" onchange="filterUsers()">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <button class="reset-filters" onclick="resetFilters()">
+        <i class="fas fa-redo"></i> Reset
+      </button>
+
+      <button class="add-btn" onclick="openAddUserModal()">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+    </div>
+
     <!-- USERS LIST -->
     <section class="logs-section">
       <div class="diagnosis-scroll">
 
         <div class="section-header">
           <h2>User List</h2>
-          <button class="add-btn" onclick="openAddUserModal()">
-            <i class="fas fa-user-plus"></i> Add User
-          </button>
+        </div>
+
+        <!-- Results counter -->
+        <div class="results-info">
+          Showing <strong id="visibleCount"><?= count($users) ?></strong> of <strong id="totalCount"><?= count($users) ?></strong> users
         </div>
 
         <div class="users-inner">
@@ -68,7 +116,11 @@ $userName = $userName ?? (session()->get('first_name').' '.session()->get('last_
           </div>
 
           <?php foreach ($users as $user): ?>
-          <div class="navbar-row">
+          <div class="navbar-row user-row" 
+               data-name="<?= strtolower(esc($user['first_name'].' '.$user['last_name'])) ?>"
+               data-email="<?= strtolower(esc($user['email'])) ?>"
+               data-role="<?= strtolower($user['role']) ?>"
+               data-status="<?= strtolower($user['status']) ?>">
             <div class="col"><?= $user['id'] ?></div>
             <div class="col"><?= esc($user['first_name'].' '.$user['last_name']) ?></div>
             <div class="col"><?= esc($user['email']) ?></div>
@@ -94,6 +146,14 @@ $userName = $userName ?? (session()->get('first_name').' '.session()->get('last_
             </div>
           </div>
           <?php endforeach; ?>
+
+          <!-- No results message -->
+          <div class="navbar-row empty no-results" style="display: none;">
+            <div class="col">
+              <i class="fas fa-search" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+              <p>No users found matching your search criteria</p>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -246,6 +306,70 @@ function openDeleteUserModal(id){
   deleteUserModal.classList.add('show');
 }
 function closeDeleteUserModal(){ deleteUserModal.classList.remove('show'); }
+
+// ================= SEARCH & FILTER ================= 
+
+function filterUsers() {
+  const searchInput = document.getElementById('searchInput').value.toLowerCase();
+  const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+  const clearBtn = document.getElementById('clearSearch');
+  
+  const rows = document.querySelectorAll('.user-row');
+  const noResults = document.querySelector('.no-results');
+  let visibleCount = 0;
+  const totalCount = rows.length;
+  
+  // Show/hide clear button
+  clearBtn.style.display = searchInput ? 'flex' : 'none';
+  
+  rows.forEach(row => {
+    const name = row.dataset.name;
+    const email = row.dataset.email;
+    const role = row.dataset.role;
+    const status = row.dataset.status;
+    
+    const matchesSearch = name.includes(searchInput) || email.includes(searchInput);
+    const matchesRole = !roleFilter || role === roleFilter;
+    const matchesStatus = !statusFilter || status === statusFilter;
+    
+    if (matchesSearch && matchesRole && matchesStatus) {
+      row.style.display = 'flex';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Update counters
+  document.getElementById('visibleCount').textContent = visibleCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  
+  // Show/hide no results message
+  if (visibleCount === 0) {
+    noResults.style.display = 'flex';
+  } else {
+    noResults.style.display = 'none';
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterUsers();
+  document.getElementById('searchInput').focus();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('roleFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  filterUsers();
+}
+
+// Real-time search feedback
+document.getElementById('searchInput').addEventListener('input', function() {
+  filterUsers();
+});
 </script>
 
 <script>

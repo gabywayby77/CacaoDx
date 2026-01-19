@@ -4,13 +4,30 @@ namespace App\Controllers;
 
 class Images extends BaseController
 {
+    public function __construct()
+    {
+        helper('auth'); // Load auth helper
+    }
+
+    /**
+     * View images (Available to all users)
+     */
     public function index()
     {
         return view('images');
     }
 
+    /**
+     * Upload images (ADMIN ONLY)
+     */
     public function upload($folder = null)
     {
+        // ✅ Check admin permission
+        if (!can_edit()) {
+            return redirect()->back()
+                ->with('error', 'Access denied. Only admins can upload images.');
+        }
+
         helper(['form', 'url']);
 
         $allowedFolders = [
