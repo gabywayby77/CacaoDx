@@ -22,6 +22,7 @@ class Filters extends BaseConfig
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
         'auth'          => \App\Filters\AuthFilter::class,
+        'apiauth'       => \App\Filters\ApiAuth::class, 
         'role'          => \App\Filters\RoleFilter::class, // ✅ Add this
     ];
 

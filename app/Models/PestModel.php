@@ -6,11 +6,8 @@ use CodeIgniter\Model;
 
 class PestModel extends Model
 {
-    protected $table      = 'pests';
+    protected $table = 'pests';
     protected $primaryKey = 'id';
-
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
 
     protected $allowedFields = [
         'name',
@@ -19,7 +16,10 @@ class PestModel extends Model
         'description',
         'damage',
         'plant_part_id',
+        'image'  // Added image field
     ];
-
-    protected $useTimestamps = false;
+    
+    protected $useTimestamps = true;
+    protected $createdField = 'created_at';
+    protected $updatedField = null;
 }
