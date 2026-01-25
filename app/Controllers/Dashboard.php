@@ -48,20 +48,37 @@ class Dashboard extends BaseController
             ->where('role', 'user')
             ->countAllResults();
 
+        // ✅ CHANGED: Total diagnosis count (total scans made)
+        $totalDiagnosisCount = $diagnosisModel->getTotalCount();
+
+        // ✅ NEW: Get unique users who made diagnoses
+        $uniqueDiagnosisUsers = $db->table('diagnosis')
+            ->select('user_id')
+            ->distinct()
+            ->countAllResults();
+
         $data = [
             'userName'         => $userName,
             'totalUsers'       => $userModel->countAll(),
-            'totalDiagnosis'   => $diagnosisModel->countAll(),
+            
+            // ✅ CHANGED: This now shows total diagnosis scans
+            'totalDiagnosis'   => $totalDiagnosisCount,
+            
+            // ✅ NEW: Number of disease types in database
             'totalDiseases'    => $diseaseModel->countAll(),
+            
+            // ✅ NEW: Unique users who scanned
+            'uniqueScanUsers'  => $uniqueDiagnosisUsers,
+            
             'farms'            => $farmModel->findAll(),
             'newUsers'         => $newUsers,
+            
             // Chart data
             'farmerCount'      => $farmerCount,
             'adminCount'       => $adminCount,
             'regularUserCount' => $regularUserCount,
         ];
 
-        // ✅ ONLY ONE RETURN
         return view('dashboard', $data);
     }
 }

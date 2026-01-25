@@ -15,14 +15,17 @@
       </a>
     </li>
 
-    <li class="<?= ($current_page === 'images') ? 'active' : '' ?>">
-      <a href="<?= base_url('images'); ?>" data-spa>
-        <i class="fas fa-image"></i>
-        <span class="label">Uploads</span>
-      </a>
-    </li>
+    <!-- ✅ ADMIN ONLY - Uploads/Images -->
+    <?php if (is_admin()): ?>
+      <li class="<?= ($current_page === 'images') ? 'active' : '' ?>">
+        <a href="<?= base_url('images'); ?>" data-spa>
+          <i class="fas fa-image"></i>
+          <span class="label">Uploads</span>
+        </a>
+      </li>
+    <?php endif; ?>
 
-    <!-- ✅ ADMIN ONLY SECTIONS -->
+    <!-- ✅ ADMIN ONLY - Users -->
     <?php if (is_admin()): ?>
       <li class="<?= ($current_page === 'users') ? 'active' : '' ?>">
         <a href="<?= base_url('users'); ?>" data-spa>
@@ -30,16 +33,9 @@
           <span class="label">Users</span>
         </a>
       </li>
-
-      <li class="<?= ($current_page === 'activity_log') ? 'active' : '' ?>">
-        <a href="<?= base_url('activity_log'); ?>" data-spa>
-          <i class="fas fa-list"></i>
-          <span class="label">Logs</span>
-        </a>
-      </li>
     <?php endif; ?>
 
-    <!-- ✅ AVAILABLE TO ALL USERS -->
+    <!-- ✅ AVAILABLE TO ALL USERS - Disease (Read-only for users) -->
     <li class="<?= ($current_page === 'disease') ? 'active' : '' ?>">
       <a href="<?= base_url('disease'); ?>" data-spa>
         <i class="fas fa-virus"></i>
@@ -47,7 +43,7 @@
       </a>
     </li>
 
-    <!-- ✅ ADMIN ONLY -->
+    <!-- ✅ ADMIN ONLY - Pests -->
     <?php if (is_admin()): ?>
       <li class="<?= ($current_page === 'pests') ? 'active' : '' ?>">
         <a href="<?= base_url('pests'); ?>" data-spa>
@@ -57,13 +53,23 @@
       </li>
     <?php endif; ?>
 
-    <!-- ✅ AVAILABLE TO ALL USERS -->
+    <!-- ✅ AVAILABLE TO ALL USERS - Diagnosis (Read-only for users) -->
     <li class="<?= ($current_page === 'diagnosis') ? 'active' : '' ?>">
       <a href="<?= base_url('diagnosis'); ?>">
         <i class="fas fa-stethoscope"></i>
         <span class="label">Diagnosis</span>
       </a>
     </li>
+
+    <!-- ✅ ADMIN ONLY - Activity Logs -->
+    <?php if (is_admin()): ?>
+      <li class="<?= ($current_page === 'activity_log') ? 'active' : '' ?>">
+        <a href="<?= base_url('activity_log'); ?>" data-spa>
+          <i class="fas fa-list"></i>
+          <span class="label">Logs</span>
+        </a>
+      </li>
+    <?php endif; ?>
 
   </ul>
 

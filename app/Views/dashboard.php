@@ -27,6 +27,7 @@ $userName = $userName ?? user_name();
 $totalUsers = $totalUsers ?? 0;
 $totalDiagnosis = $totalDiagnosis ?? 0;
 $totalDiseases = $totalDiseases ?? 0;
+$uniqueScanUsers = $uniqueScanUsers ?? 0;
 
 $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=d34c4e&color=fff&size=200&bold=true';
 ?>
@@ -78,6 +79,9 @@ $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=
     <div class="card-content">
       <h3>Total Users</h3>
       <p><?= number_format($totalUsers) ?></p>
+      <small style="font-size: 12px; color: #95a5a6; margin-top: 4px; display: block;">
+        Registered accounts
+      </small>
     </div>
   </div>
 
@@ -86,8 +90,11 @@ $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=
       <i class="fas fa-stethoscope"></i>
     </div>
     <div class="card-content">
-      <h3>Diagnostics</h3>
+      <h3>Total Scans</h3>
       <p><?= number_format($totalDiagnosis) ?></p>
+      <small style="font-size: 12px; color: #95a5a6; margin-top: 4px; display: block;">
+        <?= number_format($uniqueScanUsers) ?> users scanned
+      </small>
     </div>
   </div>
 
@@ -96,8 +103,11 @@ $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=
       <i class="fas fa-virus"></i>
     </div>
     <div class="card-content">
-      <h3>Diseases Tracked</h3>
+      <h3>Disease Types</h3>
       <p><?= number_format($totalDiseases) ?></p>
+      <small style="font-size: 12px; color: #95a5a6; margin-top: 4px; display: block;">
+        In database
+      </small>
     </div>
   </div>
 </section>

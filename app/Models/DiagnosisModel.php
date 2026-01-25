@@ -8,9 +8,28 @@ class DiagnosisModel extends Model
 {
     protected $table = 'diagnosis';
     protected $primaryKey = 'id';
-    protected $allowedFields = [];
+    protected $allowedFields = [
+        'user_id',
+        'disease_id', 
+        'treatment_id',
+        'confidence',
+        'notes',
+        'prevention',
+        'recommended_action',
+        'diagnosis_date'
+    ];
 
-    // Get relations + LIMIT + pagination
+    /**
+     * Get total count of all diagnosis records
+     */
+    public function getTotalCount()
+    {
+        return $this->db->table($this->table)->countAllResults();
+    }
+
+    /**
+     * Get paginated diagnosis with joins
+     */
     public function getPaginated($perPage, $page)
     {
         $builder = $this->db->table('diagnosis d');
