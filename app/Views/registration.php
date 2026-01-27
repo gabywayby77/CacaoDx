@@ -25,29 +25,35 @@
               </div>
             <?php endif; ?>
 
+            <?php if (session()->getFlashdata('success')): ?>
+              <div class="alert alert-success">
+                <?= session()->getFlashdata('success') ?>
+              </div>
+            <?php endif; ?>
+
             <form action="<?= site_url('registration'); ?>" method="post">
 
               <div class="row">
                 <div class="col-md-6 mb-4">
                   <label class="form-label">First Name</label>
-                  <input type="text" name="first_name" class="form-control form-control-lg" required>
+                  <input type="text" name="first_name" class="form-control form-control-lg" value="<?= old('first_name') ?>" required>
                 </div>
 
                 <div class="col-md-6 mb-4">
                   <label class="form-label">Last Name</label>
-                  <input type="text" name="last_name" class="form-control form-control-lg" required>
+                  <input type="text" name="last_name" class="form-control form-control-lg" value="<?= old('last_name') ?>" required>
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-md-6 mb-4">
                   <label class="form-label">Email</label>
-                  <input type="email" name="email" class="form-control form-control-lg" required>
+                  <input type="email" name="email" class="form-control form-control-lg" value="<?= old('email') ?>" required>
                 </div>
 
                 <div class="col-md-6 mb-4">
                   <label class="form-label">Phone Number</label>
-                  <input type="tel" name="contact_number" class="form-control form-control-lg" required>
+                  <input type="tel" name="contact_number" class="form-control form-control-lg" value="<?= old('contact_number') ?>" required>
                 </div>
               </div>
 
@@ -55,18 +61,20 @@
                 <div class="col-md-6 mb-4">
                   <label class="form-label">Password</label>
                   <input type="password" name="password" class="form-control form-control-lg" required>
+                  <small class="text-muted d-block mt-1">
+                    Minimum 6 characters
+                  </small>
                 </div>
 
-                <!-- ✅ NEW: Role Selection -->
                 <div class="col-md-6 mb-4">
                   <label class="form-label" for="role">Account Type</label>
                   <select name="role" id="role" class="form-control form-control-lg" required style="appearance: auto; -webkit-appearance: menulist; -moz-appearance: menulist; background-color: white; color: #000;">
                     <option value="" style="color: #000;">Select Role</option>
-                    <option value="user" style="color: #000;">Regular User</option>
-                    <option value="admin" style="color: #000;">Administrator</option>
+                    <option value="user" <?= old('role') === 'user' ? 'selected' : '' ?> style="color: #000;">Regular User</option>
+                    <option value="admin" <?= old('role') === 'admin' ? 'selected' : '' ?> style="color: #000;">Administrator</option>
                   </select>
                   <small class="text-muted d-block mt-1">
-                    Regular users have read-only access. Admins can manage content.
+                    Regular users have standard access. Admins can manage the system.
                   </small>
                 </div>
               </div>
@@ -79,7 +87,6 @@
 
             </form>
 
-            <!-- 🔗 Login Link -->
             <div class="text-center mt-4">
               <p>Already have an account?</p>
               <a href="<?= site_url('login'); ?>" class="btn btn-outline-secondary">

@@ -9,6 +9,11 @@ class Registration extends Controller
 {
     public function index()
     {
+        // If already logged in, redirect to dashboard
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('dashboard'));
+        }
+        
         return view('registration');
     }
 
@@ -23,7 +28,7 @@ class Registration extends Controller
             'email'          => 'required|valid_email|is_unique[users.email]',
             'contact_number' => 'required|min_length[10]',
             'password'       => 'required|min_length[6]',
-            'role'           => 'required|in_list[user,admin]', // ✅ Validate role
+            'role'           => 'required|in_list[user,admin]',
         ];
 
         if (!$this->validate($rules)) {
@@ -32,6 +37,12 @@ class Registration extends Controller
                 ->with('error', $this->validator->listErrors());
         }
 
+        $selectedRole = $this->request->getPost('role');
+
+        // ✅ Map role to user_type_id
+        // 1 = Admin, 2 = Farmer (we'll use this for regular users)
+        $userTypeId = ($selectedRole === 'admin') ? 1 : 2;
+
         // Get form data
         $data = [
             'first_name'     => $this->request->getPost('first_name'),
@@ -39,8 +50,8 @@ class Registration extends Controller
             'email'          => $this->request->getPost('email'),
             'contact_number' => $this->request->getPost('contact_number'),
             'password'       => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role'           => $this->request->getPost('role'), // ✅ Store selected role
-            'user_type_id'   => $this->request->getPost('role') === 'admin' ? 1 : 2, // Optional: sync with user_type_id
+            'role'           => $selectedRole,      // ✅ 'admin' or 'user'
+            'user_type_id'   => $userTypeId,        // ✅ 1 for admin, 2 for user
             'registered_at'  => date('Y-m-d H:i:s'),
             'status'         => 'active',
         ];

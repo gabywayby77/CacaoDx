@@ -1,5 +1,6 @@
 <?php
 $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('last_name'));
+$avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=d34c4e&color=fff&size=200&bold=true';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,18 +26,46 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
   <!-- Main Content -->
   <main id="mainContent" class="main-content">
     <header class="header">
-      <button id="sidebarToggle" class="sidebar-toggle">
-        <i class="fas fa-bars"></i>
-      </button>
-      <h1 class="page-title">Activity Logs</h1>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title">Activity Logs</h1>
+      </div>
       <div class="header-right">
         <div class="icons">
           <button class="icon-btn"><i class="fas fa-search"></i></button>
           <button class="icon-btn"><i class="fas fa-bell"></i></button>
         </div>
-        <div class="profile-inline">
-          <img src="https://ui-avatars.com/api/?name=<?= urlencode($userName) ?>&size=40" alt="Profile" class="profile-pic">
-          <span class="username"><?= esc($userName) ?></span>
+        
+        <!-- PROFILE DROPDOWN -->
+        <div class="profile-dropdown-container">
+          <div class="profile-inline" onclick="toggleProfileDropdown(event)">
+            <img src="<?= $avatar ?>" class="profile-pic" alt="Profile">
+            <div>
+              <span class="username"><?= esc($userName) ?></span>
+              <small style="display: block; font-size: 11px; color: #95a5a6;">
+                <?= is_admin() ? 'Administrator' : 'User' ?>
+              </small>
+            </div>
+            <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px; color: #95a5a6; transition: transform 0.3s;"></i>
+          </div>
+
+          <div id="profileDropdown" class="profile-dropdown">
+            <a href="<?= base_url('profile') ?>" class="dropdown-item">
+              <i class="fas fa-user"></i>
+              <span>View Profile</span>
+            </a>
+            <a href="<?= base_url('settings') ?>" class="dropdown-item">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="<?= base_url('logout') ?>" class="dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Sign Out</span>
+            </a>
+          </div>
         </div>
       </div>
     </header>
@@ -57,15 +86,17 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
       </div>
 
       <div class="filter-group">
-        <label for="dateFilter">
-          <i class="fas fa-calendar"></i> Date:
+        <label for="startDate">
+          <i class="fas fa-calendar"></i> From:
         </label>
-        <select id="dateFilter" onchange="filterLogs()">
-          <option value="">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-        </select>
+        <input type="date" id="startDate" onchange="filterLogs()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+      </div>
+
+      <div class="filter-group">
+        <label for="endDate">
+          <i class="fas fa-calendar"></i> To:
+        </label>
+        <input type="date" id="endDate" onchange="filterLogs()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
       </div>
 
       <button class="reset-filters" onclick="resetFilters()">
@@ -81,7 +112,7 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
         <!-- Results counter -->
         <div class="results-info">
-          Showing <strong id="visibleCount"><?= !empty($logs) ? count($logs) : 0 ?></strong> of <strong id="totalCount"><?= !empty($logs) ? count($logs) : 0 ?></strong> logs
+          Showing <strong id="visibleCount"><?= !empty($logs) ? count($logs) : 0 ?></strong> of <strong id="totalCount"><?= $totalLogs ?? 0 ?></strong> logs
         </div>
 
         <div class="diagnosis-inner">
@@ -178,25 +209,68 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
   });
 })();
 
+// ================= PROFILE DROPDOWN ================= 
+
+function toggleProfileDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('profileDropdown');
+  const chevron = event.currentTarget.querySelector('.fa-chevron-down');
+  
+  dropdown.classList.toggle('show');
+  
+  if (dropdown.classList.contains('show')) {
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    chevron.style.transform = 'rotate(0deg)';
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('profileDropdown');
+  const container = event.target.closest('.profile-dropdown-container');
+  const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+  
+  if (!container && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+    if (chevron) {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+});
+
+// Close dropdown on escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const dropdown = document.getElementById('profileDropdown');
+    const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+    
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+      if (chevron) {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+  }
+});
+
 // ================= SEARCH & FILTER ================= 
+
+// Store the original total from server
+const originalTotal = <?= $totalLogs ?? 0 ?>;
 
 function filterLogs() {
   const searchInput = document.getElementById('searchInput').value.toLowerCase();
-  const dateFilter = document.getElementById('dateFilter').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
   const clearBtn = document.getElementById('clearSearch');
   
   const rows = document.querySelectorAll('.log-row');
   const noResults = document.querySelector('.no-results');
   let visibleCount = 0;
-  const totalCount = rows.length;
   
   // Show/hide clear button
   clearBtn.style.display = searchInput ? 'flex' : 'none';
-  
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
   
   rows.forEach(row => {
     const user = row.dataset.user;
@@ -206,13 +280,21 @@ function filterLogs() {
     
     const matchesSearch = user.includes(searchInput) || activity.includes(searchInput);
     
+    // Date range filtering
     let matchesDate = true;
-    if (dateFilter === 'today') {
-      matchesDate = logDate >= today;
-    } else if (dateFilter === 'week') {
-      matchesDate = logDate >= weekAgo;
-    } else if (dateFilter === 'month') {
-      matchesDate = logDate >= monthAgo;
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (logDate < start) {
+        matchesDate = false;
+      }
+    }
+    if (endDate && matchesDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (logDate > end) {
+        matchesDate = false;
+      }
     }
     
     if (matchesSearch && matchesDate) {
@@ -223,9 +305,9 @@ function filterLogs() {
     }
   });
   
-  // Update counters
+  // Update counters - only update visible count, keep original total
   document.getElementById('visibleCount').textContent = visibleCount;
-  document.getElementById('totalCount').textContent = totalCount;
+  document.getElementById('totalCount').textContent = originalTotal;
   
   // Show/hide no results message
   if (visibleCount === 0) {
@@ -243,7 +325,8 @@ function clearSearch() {
 
 function resetFilters() {
   document.getElementById('searchInput').value = '';
-  document.getElementById('dateFilter').value = '';
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
   filterLogs();
 }
 

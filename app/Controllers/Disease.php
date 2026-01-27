@@ -20,7 +20,16 @@ class Disease extends Controller
      */
     public function index()
     {
+        $session = session();
+
+        // Get user name for the header
+        $userName = trim(
+            ($session->get('first_name') ?? '') . ' ' .
+            ($session->get('last_name') ?? '')
+        );
+
         $data = [
+            'userName' => $userName,
             'diseases' => $this->diseaseModel->findAll(),
         ];
 
@@ -38,16 +47,16 @@ class Disease extends Controller
         }
 
         $rules = [
-            'name'           => 'required|min_length[3]',
-            'type'           => 'required',
-            'cause'          => 'required',
+            'name'           => 'required|min_length[3]|max_length[100]',
+            'type'           => 'required|max_length[50]',
+            'cause'          => 'required|max_length[200]',
             'plant_part_id'  => 'required',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', $this->validator->listErrors());
+                ->with('error', 'Please check your input fields');
         }
 
         $this->diseaseModel->insert([
@@ -58,7 +67,7 @@ class Disease extends Controller
         ]);
 
         return redirect()->to('/disease')
-            ->with('success', 'Disease added successfully.');
+            ->with('success', 'Disease added successfully!');
     }
 
     /**
@@ -73,16 +82,16 @@ class Disease extends Controller
 
         $rules = [
             'id'             => 'required|is_natural_no_zero',
-            'name'           => 'required|min_length[3]',
-            'type'           => 'required',
-            'cause'          => 'required',
+            'name'           => 'required|min_length[3]|max_length[100]',
+            'type'           => 'required|max_length[50]',
+            'cause'          => 'required|max_length[200]',
             'plant_part_id'  => 'required',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', $this->validator->listErrors());
+                ->with('error', 'Please check your input fields');
         }
 
         $id = $this->request->getPost('id');
@@ -95,7 +104,7 @@ class Disease extends Controller
         ]);
 
         return redirect()->to('/disease')
-            ->with('success', 'Disease updated successfully.');
+            ->with('success', 'Disease updated successfully!');
     }
 
     /**
@@ -118,6 +127,6 @@ class Disease extends Controller
         $this->diseaseModel->delete($id);
 
         return redirect()->to('/disease')
-            ->with('success', 'Disease deleted successfully.');
+            ->with('success', 'Disease deleted successfully!');
     }
 }

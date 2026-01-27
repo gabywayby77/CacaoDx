@@ -1,12 +1,9 @@
-<?php
-$userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('last_name'));
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pests</title>
+  <title>Pests - CacaoDX</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="<?= base_url('assets/styles/popup.css'); ?>">
@@ -16,6 +13,12 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 </head>
 
 <body>
+<?php
+  helper('auth');
+  
+  $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('last_name'));
+  $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=d34c4e&color=fff&size=200&bold=true';
+?>
 
 <div class="page-wrapper">
 
@@ -30,23 +33,69 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
     <!-- Header -->
     <header class="header">
-      <button id="sidebarToggle" class="sidebar-toggle" aria-expanded="true">
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <h1 class="page-title">Pests</h1>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title">Pests Management</h1>
+      </div>
 
       <div class="header-right">
         <div class="icons">
-          <button class="icon-btn"><i class="fas fa-search"></i></button>
-          <button class="icon-btn"><i class="fas fa-bell"></i></button>
+          <button class="icon-btn" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="icon-btn" title="Notifications">
+            <i class="fas fa-bell"></i>
+          </button>
         </div>
-        <div class="profile-inline">
-          <img src="https://ui-avatars.com/api/?name=<?= urlencode($userName) ?>&size=40" class="profile-pic">
-          <span class="username"><?= esc($userName) ?></span>
+
+        <!-- PROFILE DROPDOWN -->
+        <div class="profile-dropdown-container">
+          <div class="profile-inline" onclick="toggleProfileDropdown(event)">
+            <img src="<?= $avatar ?>" class="profile-pic" alt="Profile">
+            <div>
+              <span class="username"><?= esc($userName) ?></span>
+              <small style="display: block; font-size: 11px; color: #95a5a6;">
+                <?= is_admin() ? 'Administrator' : 'User' ?>
+              </small>
+            </div>
+            <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px; color: #95a5a6; transition: transform 0.3s;"></i>
+          </div>
+
+          <div id="profileDropdown" class="profile-dropdown">
+            <a href="<?= base_url('profile') ?>" class="dropdown-item">
+              <i class="fas fa-user"></i>
+              <span>View Profile</span>
+            </a>
+            <a href="<?= base_url('settings') ?>" class="dropdown-item">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="<?= base_url('logout') ?>" class="dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Sign Out</span>
+            </a>
+          </div>
         </div>
       </div>
     </header>
+
+    <!-- Success/Error Messages -->
+    <?php if (session()->getFlashdata('success')): ?>
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <?= session()->getFlashdata('success') ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('error')): ?>
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <?= session()->getFlashdata('error') ?>
+      </div>
+    <?php endif; ?>
 
     <!-- SEARCH & FILTER BAR -->
     <div class="search-filter-bar">
@@ -87,8 +136,8 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
         <i class="fas fa-redo"></i> Reset
       </button>
 
-      <button class="btn add-btn" onclick="openPestModal()">
-        <i class="fas fa-bug"></i> Add Pest
+      <button class="add-btn" onclick="openPestModal()">
+        <i class="fas fa-plus"></i> Add Pest
       </button>
     </div>
 
@@ -145,7 +194,7 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
                       '<?= esc($pest['damage']) ?>',
                       '<?= $pest['plant_part_id'] ?>'
                     )">
-                    <i class="fas fa-pen"></i>
+                    <i class="fas fa-edit"></i>
                   </button>
 
                   <button class="action-btn delete-btn"
@@ -176,118 +225,11 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
   </main>
 </div>
 
-<!-- SIDEBAR TOGGLE (UPDATED / DASHBOARD STYLE) -->
-<script>
-(function () {
-  const sidebar = document.getElementById('sidebar');
-  const toggle = document.getElementById('sidebarToggle');
-  const overlay = document.getElementById('overlay');
-
-  function setAria(expanded) {
-    toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-  }
-
-  function isMobile() {
-    return window.innerWidth <= 900;
-  }
-
-  toggle.addEventListener('click', () => {
-    if (isMobile()) {
-      const open = sidebar.classList.toggle('open');
-      overlay.classList.toggle('show', open);
-      document.body.classList.toggle('no-scroll', open);
-      setAria(open);
-    } else {
-      const collapsed = sidebar.classList.toggle('collapsed');
-      setAria(!collapsed);
-    }
-  });
-
-  overlay.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-    document.body.classList.remove('no-scroll');
-    setAria(false);
-  });
-
-  window.addEventListener('resize', () => {
-    if (!isMobile()) {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('show');
-      document.body.classList.remove('no-scroll');
-    }
-  });
-})();
-
-// ================= SEARCH & FILTER ================= 
-
-function filterPests() {
-  const searchInput = document.getElementById('searchInput').value.toLowerCase();
-  const familyFilter = document.getElementById('familyFilter').value.toLowerCase();
-  const clearBtn = document.getElementById('clearSearch');
-  
-  const rows = document.querySelectorAll('.pest-row');
-  const noResults = document.querySelector('.no-results');
-  let visibleCount = 0;
-  const totalCount = rows.length;
-  
-  // Show/hide clear button
-  clearBtn.style.display = searchInput ? 'flex' : 'none';
-  
-  rows.forEach(row => {
-    const name = row.dataset.name;
-    const scientific = row.dataset.scientific;
-    const family = row.dataset.family;
-    
-    const matchesSearch = name.includes(searchInput) || scientific.includes(searchInput);
-    const matchesFamily = !familyFilter || family === familyFilter;
-    
-    if (matchesSearch && matchesFamily) {
-      row.style.display = 'flex';
-      visibleCount++;
-    } else {
-      row.style.display = 'none';
-    }
-  });
-  
-  // Update counters
-  document.getElementById('visibleCount').textContent = visibleCount;
-  document.getElementById('totalCount').textContent = totalCount;
-  
-  // Show/hide no results message
-  if (visibleCount === 0) {
-    noResults.style.display = 'flex';
-  } else {
-    noResults.style.display = 'none';
-  }
-}
-
-function clearSearch() {
-  document.getElementById('searchInput').value = '';
-  filterPests();
-  document.getElementById('searchInput').focus();
-}
-
-function resetFilters() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('familyFilter').value = '';
-  filterPests();
-}
-
-// Real-time search feedback
-document.getElementById('searchInput').addEventListener('input', function() {
-  filterPests();
-});
-</script>
-
 <!-- ADD PEST MODAL -->
-<div id="pestModal" class="modal-overlay">
-  <div class="modal-card">
+<div id="pestModal" class="popup-overlay">
+  <div class="form-card">
 
-    <div class="modal-header">
-      <h2>Add Pest</h2>
-      <button class="modal-close" onclick="closePestModal()">&times;</button>
-    </div>
+    <div class="popup-header">Add Pest</div>
 
     <form action="<?= site_url('pests/store'); ?>" method="post">
       <?= csrf_field(); ?>
@@ -336,13 +278,10 @@ document.getElementById('searchInput').addEventListener('input', function() {
 </div>
 
 <!-- EDIT PEST MODAL -->
-<div id="editPestModal" class="modal-overlay">
-  <div class="modal-card">
+<div id="editPestModal" class="popup-overlay">
+  <div class="form-card">
 
-    <div class="modal-header">
-      <h2>Edit Pest</h2>
-      <button class="modal-close" onclick="closeEditPestModal()">&times;</button>
-    </div>
+    <div class="popup-header">Edit Pest</div>
 
     <form action="<?= site_url('pests/update'); ?>" method="post">
       <?= csrf_field(); ?>
@@ -382,32 +321,8 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
       <div class="form-actions">
         <button type="button" class="btn cancel" onclick="closeEditPestModal()">Cancel</button>
-        <button type="submit" class="btn add-btn">Update Pest</button>
-      </div>
-    </form>
-
-  </div>
-</div>
-
-<!-- DELETE PEST MODAL -->
-<div id="deletePestModal" class="modal-overlay">
-  <div class="modal-card">
-
-    <div class="modal-header">
-      <h2>Delete Pest</h2>
-      <button class="modal-close" onclick="closeDeletePestModal()">&times;</button>
-    </div>
-
-    <p>Are you sure you want to delete this pest?</p>
-
-    <form action="<?= site_url('pests/delete'); ?>" method="post">
-      <?= csrf_field(); ?>
-      <input type="hidden" name="id" id="delete_pest_id">
-
-      <div class="form-actions">
-        <button type="button" class="btn cancel" onclick="closeDeletePestModal()">Cancel</button>
-        <button type="submit" class="btn add-btn" style="background:#dc3545;">
-          Delete
+        <button type="submit" class="btn add-btn">
+          <i class="fas fa-save"></i> Update Pest
         </button>
       </div>
     </form>
@@ -415,10 +330,167 @@ document.getElementById('searchInput').addEventListener('input', function() {
   </div>
 </div>
 
+<!-- DELETE PEST MODAL -->
+<div id="deletePestModal" class="popup-overlay">
+  <div class="form-card">
+
+    <div class="popup-header">Delete Pest</div>
+
+    <p style="text-align:center; padding: 20px;">Are you sure you want to delete this pest? This action cannot be undone.</p>
+
+    <form action="<?= site_url('pests/delete'); ?>" method="post">
+      <?= csrf_field(); ?>
+      <input type="hidden" name="id" id="delete_pest_id">
+
+      <div class="form-actions">
+        <button type="button" class="btn cancel" onclick="closeDeletePestModal()">Cancel</button>
+        <button type="submit" class="btn danger">
+          <i class="fas fa-trash"></i> Delete Pest
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+
+<!-- Sidebar Toggle -->
+<script>
+(function () {
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('sidebarToggle');
+  const overlay = document.getElementById('overlay');
+
+  function isMobile() {
+    return window.innerWidth <= 900;
+  }
+
+  toggle.addEventListener('click', () => {
+    if (isMobile()) {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      document.body.classList.toggle('no-scroll');
+    } else {
+      sidebar.classList.toggle('collapsed');
+    }
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    document.body.classList.remove('no-scroll');
+  });
+})();
+</script>
+
+<!-- Profile Dropdown -->
+<script>
+function toggleProfileDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('profileDropdown');
+  const chevron = event.currentTarget.querySelector('.fa-chevron-down');
+  
+  dropdown.classList.toggle('show');
+  
+  if (dropdown.classList.contains('show')) {
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    chevron.style.transform = 'rotate(0deg)';
+  }
+}
+
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('profileDropdown');
+  const container = event.target.closest('.profile-dropdown-container');
+  const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+  
+  if (!container && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+    if (chevron) {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const dropdown = document.getElementById('profileDropdown');
+    const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+    
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+      if (chevron) {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+  }
+});
+</script>
+
+<!-- Search & Filter -->
+<script>
+function filterPests() {
+  const searchInput = document.getElementById('searchInput').value.toLowerCase();
+  const familyFilter = document.getElementById('familyFilter').value.toLowerCase();
+  const clearBtn = document.getElementById('clearSearch');
+  
+  const rows = document.querySelectorAll('.pest-row');
+  const noResults = document.querySelector('.no-results');
+  let visibleCount = 0;
+  const totalCount = rows.length;
+  
+  clearBtn.style.display = searchInput ? 'flex' : 'none';
+  
+  rows.forEach(row => {
+    const name = row.dataset.name;
+    const scientific = row.dataset.scientific;
+    const family = row.dataset.family;
+    
+    const matchesSearch = name.includes(searchInput) || scientific.includes(searchInput);
+    const matchesFamily = !familyFilter || family === familyFilter;
+    
+    if (matchesSearch && matchesFamily) {
+      row.style.display = 'flex';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  document.getElementById('visibleCount').textContent = visibleCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  
+  if (visibleCount === 0) {
+    noResults.style.display = 'flex';
+  } else {
+    noResults.style.display = 'none';
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterPests();
+  document.getElementById('searchInput').focus();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('familyFilter').value = '';
+  filterPests();
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  filterPests();
+});
+</script>
+
+<!-- Modal Functions -->
 <script>
 function openPestModal() {
   document.getElementById('pestModal').classList.add('show');
 }
+
 function closePestModal() {
   document.getElementById('pestModal').classList.remove('show');
 }
@@ -446,6 +518,25 @@ function openDeletePestModal(id) {
 function closeDeletePestModal() {
   document.getElementById('deletePestModal').classList.remove('show');
 }
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closePestModal();
+    closeEditPestModal();
+    closeDeletePestModal();
+  }
+});
+</script>
+
+<!-- Auto-hide alerts after 5 seconds -->
+<script>
+setTimeout(() => {
+  document.querySelectorAll('.alert').forEach(alert => {
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  });
+}, 5000);
 </script>
 
 </body>

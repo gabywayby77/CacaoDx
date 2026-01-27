@@ -1,12 +1,9 @@
-<?php
-$userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('last_name'));
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Diseases</title>
+  <title>Diseases - CacaoDX</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="<?= base_url('assets/styles/popup.css'); ?>">
@@ -16,6 +13,12 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 </head>
 
 <body>
+<?php
+  helper('auth');
+  
+  $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('last_name'));
+  $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=d34c4e&color=fff&size=200&bold=true';
+?>
 
 <div class="page-wrapper">
 
@@ -26,24 +29,69 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
     <!-- HEADER -->
     <header class="header">
-      <button id="sidebarToggle" class="sidebar-toggle">
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <h1 class="page-title">Diseases</h1>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title">Diseases Management</h1>
+      </div>
 
       <div class="header-right">
         <div class="icons">
-          <button class="icon-btn"><i class="fas fa-search"></i></button>
-          <button class="icon-btn"><i class="fas fa-bell"></i></button>
+          <button class="icon-btn" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="icon-btn" title="Notifications">
+            <i class="fas fa-bell"></i>
+          </button>
         </div>
 
-        <div class="profile-inline">
-          <img src="https://ui-avatars.com/api/?name=<?= urlencode($userName) ?>&size=40">
-          <span class="username"><?= esc($userName) ?></span>
+        <!-- PROFILE DROPDOWN -->
+        <div class="profile-dropdown-container">
+          <div class="profile-inline" onclick="toggleProfileDropdown(event)">
+            <img src="<?= $avatar ?>" class="profile-pic" alt="Profile">
+            <div>
+              <span class="username"><?= esc($userName) ?></span>
+              <small style="display: block; font-size: 11px; color: #95a5a6;">
+                <?= is_admin() ? 'Administrator' : 'User' ?>
+              </small>
+            </div>
+            <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px; color: #95a5a6; transition: transform 0.3s;"></i>
+          </div>
+
+          <div id="profileDropdown" class="profile-dropdown">
+            <a href="<?= base_url('profile') ?>" class="dropdown-item">
+              <i class="fas fa-user"></i>
+              <span>View Profile</span>
+            </a>
+            <a href="<?= base_url('settings') ?>" class="dropdown-item">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="<?= base_url('logout') ?>" class="dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Sign Out</span>
+            </a>
+          </div>
         </div>
       </div>
     </header>
+
+    <!-- Success/Error Messages -->
+    <?php if (session()->getFlashdata('success')): ?>
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <?= session()->getFlashdata('success') ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('error')): ?>
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <?= session()->getFlashdata('error') ?>
+      </div>
+    <?php endif; ?>
 
     <!-- SEARCH & FILTER BAR -->
     <div class="search-filter-bar">
@@ -192,7 +240,9 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
       <div class="form-actions">
         <button type="button" class="btn cancel" onclick="closeAddDiseaseModal()">Cancel</button>
-        <button type="submit" class="btn add-btn">Add Disease</button>
+        <button type="submit" class="btn add-btn">
+          <i class="fas fa-plus"></i> Add Disease
+        </button>
       </div>
     </form>
   </div>
@@ -231,7 +281,9 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
 
       <div class="form-actions">
         <button type="button" class="btn cancel" onclick="closeEditDiseaseModal()">Cancel</button>
-        <button type="submit" class="btn add-btn">Save</button>
+        <button type="submit" class="btn add-btn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
       </div>
     </form>
   </div>
@@ -246,25 +298,31 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
       <?= csrf_field() ?>
       <input type="hidden" name="id" id="delete_disease_id">
 
-      <p style="text-align:center;">Are you sure you want to delete this disease?</p>
+      <p style="text-align:center; padding: 20px;">Are you sure you want to delete this disease? This action cannot be undone.</p>
 
       <div class="form-actions">
         <button type="button" class="btn cancel" onclick="closeDeleteDiseaseModal()">Cancel</button>
-        <button type="submit" class="btn danger">Delete</button>
+        <button type="submit" class="btn danger">
+          <i class="fas fa-trash"></i> Delete Disease
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- ================= JS ================= -->
+
+<!-- Sidebar Toggle -->
 <script>
 (function(){
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('sidebarToggle');
   const overlay = document.getElementById('overlay');
 
+  function isMobile() { return window.innerWidth <= 900; }
+
   toggle.onclick = () => {
-    if (window.innerWidth <= 900) {
+    if (isMobile()) {
       sidebar.classList.toggle('open');
       overlay.classList.toggle('show');
       document.body.classList.toggle('no-scroll');
@@ -279,9 +337,54 @@ $userName = $userName ?? (session()->get('first_name') . ' ' . session()->get('l
     document.body.classList.remove('no-scroll');
   };
 })();
+</script>
 
-// ================= SEARCH & FILTER ================= 
+<!-- Profile Dropdown -->
+<script>
+function toggleProfileDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('profileDropdown');
+  const chevron = event.currentTarget.querySelector('.fa-chevron-down');
+  
+  dropdown.classList.toggle('show');
+  
+  if (dropdown.classList.contains('show')) {
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    chevron.style.transform = 'rotate(0deg)';
+  }
+}
 
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('profileDropdown');
+  const container = event.target.closest('.profile-dropdown-container');
+  const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+  
+  if (!container && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+    if (chevron) {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const dropdown = document.getElementById('profileDropdown');
+    const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+    
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+      if (chevron) {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+  }
+});
+</script>
+
+<!-- Search & Filter -->
+<script>
 function filterDiseases() {
   const searchInput = document.getElementById('searchInput').value.toLowerCase();
   const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
@@ -292,7 +395,6 @@ function filterDiseases() {
   let visibleCount = 0;
   const totalCount = rows.length;
   
-  // Show/hide clear button
   clearBtn.style.display = searchInput ? 'flex' : 'none';
   
   rows.forEach(row => {
@@ -311,11 +413,9 @@ function filterDiseases() {
     }
   });
   
-  // Update counters
   document.getElementById('visibleCount').textContent = visibleCount;
   document.getElementById('totalCount').textContent = totalCount;
   
-  // Show/hide no results message
   if (visibleCount === 0) {
     noResults.style.display = 'flex';
   } else {
@@ -335,15 +435,28 @@ function resetFilters() {
   filterDiseases();
 }
 
-// Real-time search feedback
 document.getElementById('searchInput').addEventListener('input', function() {
   filterDiseases();
 });
+</script>
 
-// Modal functions
+<!-- Modal Functions -->
+<script>
+const addDiseaseModal = document.getElementById('addDiseaseModal');
+const editDiseaseModal = document.getElementById('editDiseaseModal');
+const deleteDiseaseModal = document.getElementById('deleteDiseaseModal');
+
+const edit_disease_id = document.getElementById('edit_disease_id');
+const edit_name = document.getElementById('edit_name');
+const edit_type = document.getElementById('edit_type');
+const edit_cause = document.getElementById('edit_cause');
+const edit_plant_part = document.getElementById('edit_plant_part');
+const delete_disease_id = document.getElementById('delete_disease_id');
+
 function openAddDiseaseModal() {
   addDiseaseModal.classList.add('show');
 }
+
 function closeAddDiseaseModal() {
   addDiseaseModal.classList.remove('show');
 }
@@ -356,6 +469,7 @@ function openEditDiseaseModal(id, n, t, c, p) {
   edit_plant_part.value = p;
   editDiseaseModal.classList.add('show');
 }
+
 function closeEditDiseaseModal() {
   editDiseaseModal.classList.remove('show');
 }
@@ -364,9 +478,29 @@ function openDeleteDiseaseModal(id) {
   delete_disease_id.value = id;
   deleteDiseaseModal.classList.add('show');
 }
+
 function closeDeleteDiseaseModal() {
   deleteDiseaseModal.classList.remove('show');
 }
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeAddDiseaseModal();
+    closeEditDiseaseModal();
+    closeDeleteDiseaseModal();
+  }
+});
+</script>
+
+<!-- Auto-hide alerts after 5 seconds -->
+<script>
+setTimeout(() => {
+  document.querySelectorAll('.alert').forEach(alert => {
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  });
+}, 5000);
 </script>
 
 </body>

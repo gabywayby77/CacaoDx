@@ -7,14 +7,17 @@ class Logs extends BaseController
 {
     public function index()
     {
+        // Load auth helper for role checks
+        helper('auth');
+        
         $model = new ActivityLogModel();
 
         // Pagination
         $currentPage = $this->request->getGet('page') ?? 1;
-        $perPage = 10;
+        $perPage = 20;  // Changed from 10 to 20
 
-        // Total logs
-        $totalLogs = $model->countAllResults();
+        // Total logs (get before pagination)
+        $totalLogs = $model->countAllResults(false);
 
         // Total pages
         $totalPages = ceil($totalLogs / $perPage);
@@ -31,6 +34,7 @@ class Logs extends BaseController
             'logs' => $logs,
             'currentPage' => (int)$currentPage,
             'totalPages' => $totalPages,
+            'totalLogs' => $totalLogs,
             'userName' => $userName
         ]);
     }

@@ -85,6 +85,14 @@ $routes->group('', ['filter' => ['auth', 'role']], function (RouteCollection $ro
 
     // Dashboard
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('profile', 'Dashboard::profile');
+$routes->get('settings', 'Dashboard::settings');
+// Settings POST routes
+$routes->post('settings/update-personal', 'Dashboard::updatePersonal');
+$routes->post('settings/update-password', 'Dashboard::updatePassword');
+$routes->post('settings/update-notifications', 'Dashboard::updateNotifications');
+$routes->post('settings/update-preferences', 'Dashboard::updatePreferences');
+$routes->get('settings/delete-account', 'Dashboard::deleteAccount');
 
     // Images
     $routes->get('images', 'Images::index');

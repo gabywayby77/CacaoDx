@@ -6,8 +6,8 @@ use CodeIgniter\Model;
 
 class UserModel extends Model
 {
-    protected $table = 'users';   // users table
-    protected $primaryKey = 'id'; // PK
+    protected $table = 'users';
+    protected $primaryKey = 'id';
 
     protected $allowedFields = [
         'first_name',
@@ -18,17 +18,9 @@ class UserModel extends Model
         'contact_number',
         'registered_at',
         'status',
-        'farm_location'
+        'farm_location',
+        'role'  // ✅ ADD THIS LINE!
     ];
     
-    protected $useTimestamps = false; // since you are using registered_at, not created_at/updated_at
-
-    // Optionally, you can auto-hash password here
-    // protected function beforeInsert(array $data)
-    // {
-    //     if (isset($data['data']['password'])) {
-    //         $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
-    //     }
-    //     return $data;
-    // }
+    protected $useTimestamps = false;
 }

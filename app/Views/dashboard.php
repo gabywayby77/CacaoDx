@@ -58,13 +58,33 @@ $avatar = 'https://ui-avatars.com/api/?name='.urlencode($userName).'&background=
       </button>
     </div>
 
-    <div class="profile-inline" onclick="openProfile()">
-      <img src="<?= $avatar ?>" class="profile-pic" alt="Profile">
-      <div>
-        <span class="username"><?= esc($userName) ?></span>
-        <small style="display: block; font-size: 11px; color: #95a5a6;">
-          <?= is_admin() ? 'Administrator' : 'User' ?>
-        </small>
+    <!-- PROFILE DROPDOWN -->
+    <div class="profile-dropdown-container">
+      <div class="profile-inline" onclick="toggleProfileDropdown(event)">
+        <img src="<?= $avatar ?>" class="profile-pic" alt="Profile">
+        <div>
+          <span class="username"><?= esc($userName) ?></span>
+          <small style="display: block; font-size: 11px; color: #95a5a6;">
+            <?= is_admin() ? 'Administrator' : 'User' ?>
+          </small>
+        </div>
+        <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px; color: #95a5a6; transition: transform 0.3s;"></i>
+      </div>
+
+      <div id="profileDropdown" class="profile-dropdown">
+        <a href="<?= base_url('profile') ?>" class="dropdown-item">
+          <i class="fas fa-user"></i>
+          <span>View Profile</span>
+        </a>
+        <a href="<?= base_url('settings') ?>" class="dropdown-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="<?= base_url('logout') ?>" class="dropdown-item logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sign Out</span>
+        </a>
       </div>
     </div>
   </div>
@@ -333,6 +353,52 @@ setTimeout(() => map.invalidateSize(), 300);
         document.body.style.overflow = '';
     });
 })();
+</script>
+
+<!-- ===== PROFILE DROPDOWN ===== -->
+<script>
+function toggleProfileDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('profileDropdown');
+  const chevron = event.currentTarget.querySelector('.fa-chevron-down');
+  
+  dropdown.classList.toggle('show');
+  
+  if (dropdown.classList.contains('show')) {
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    chevron.style.transform = 'rotate(0deg)';
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('profileDropdown');
+  const container = event.target.closest('.profile-dropdown-container');
+  const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+  
+  if (!container && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+    if (chevron) {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+});
+
+// Close dropdown on escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const dropdown = document.getElementById('profileDropdown');
+    const chevron = document.querySelector('.profile-inline .fa-chevron-down');
+    
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+      if (chevron) {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+  }
+});
 </script>
 
 </body>

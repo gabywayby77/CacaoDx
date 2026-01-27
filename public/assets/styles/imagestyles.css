@@ -393,3 +393,113 @@
     top: 10px;
   }
 }
+
+/* ===== Profile Dropdown ===== */
+.profile-dropdown-container {
+  position: relative;
+}
+
+.profile-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+
+.profile-inline:hover {
+  border-color: #d34c4e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.profile-inline:hover .fa-chevron-down {
+  color: #d34c4e;
+}
+
+.profile-pic {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #d34c4e;
+  object-fit: cover;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 14px;
+  color: #2d3436;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  min-width: 220px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.profile-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  color: #2d3436;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+  border-left-color: #d34c4e;
+  padding-left: 22px;
+}
+
+.dropdown-item.active {
+  background: #f8f9fa;
+  border-left-color: #d34c4e;
+  font-weight: 600;
+}
+
+.dropdown-item.logout {
+  color: #e74c3c;
+}
+
+.dropdown-item.logout:hover {
+  background: #fee;
+  border-left-color: #e74c3c;
+}
+
+.dropdown-item i {
+  width: 18px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e9ecef;
+  margin: 8px 0;
+}
