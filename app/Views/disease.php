@@ -10,6 +10,39 @@
   <link rel="stylesheet" href="<?= base_url('assets/styles/diseasestyles.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/styles/sidebar.css'); ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    /* Select dropdown styling for modals */
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      transition: all var(--transition);
+      outline: none;
+    }
+
+    .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(211, 76, 78, 0.1);
+    }
+
+    .form-group select:hover {
+      border-color: var(--primary-light);
+    }
+
+    /* Updated column widths for disease table with plant part */
+    .header-row .col:nth-child(1), .navbar-row .col:nth-child(1) { flex: 1 1 180px; } /* Name */
+    .header-row .col:nth-child(2), .navbar-row .col:nth-child(2) { flex: 0 0 120px; } /* Type */
+    .header-row .col:nth-child(3), .navbar-row .col:nth-child(3) { flex: 2 1 280px; } /* Cause */
+    .header-row .col:nth-child(4), .navbar-row .col:nth-child(4) { flex: 0 0 120px; } /* Plant Part */
+    .header-row .col:nth-child(5), .navbar-row .col:nth-child(5) { flex: 0 0 150px; } /* Actions */
+  </style>
 </head>
 
 <body>
@@ -128,9 +161,11 @@
         <i class="fas fa-redo"></i> Reset
       </button>
 
+      <?php if (is_admin()): ?>
       <button class="add-btn" onclick="openAddDiseaseModal()">
         <i class="fas fa-plus"></i> Add Disease
       </button>
+      <?php endif; ?>
     </div>
 
     <!-- DISEASES -->
@@ -149,12 +184,13 @@
         <div class="disease-inner">
 
           <div class="header-row">
-            <div class="col">ID</div>
             <div class="col">Name</div>
             <div class="col">Type</div>
             <div class="col">Cause</div>
             <div class="col">Plant Part</div>
+            <?php if (is_admin()): ?>
             <div class="col">Actions</div>
+            <?php endif; ?>
           </div>
 
           <?php if (!empty($diseases)): ?>
@@ -163,12 +199,12 @@
                    data-name="<?= strtolower(esc($disease['name'])) ?>"
                    data-type="<?= strtolower(esc($disease['type'])) ?>"
                    data-cause="<?= strtolower(esc($disease['cause'])) ?>">
-                <div class="col"><?= esc($disease['id']) ?></div>
                 <div class="col"><?= esc($disease['name']) ?></div>
                 <div class="col"><?= esc($disease['type']) ?></div>
                 <div class="col"><?= esc($disease['cause']) ?></div>
-                <div class="col"><?= esc($disease['plant_part_id']) ?></div>
+                <div class="col"><?= esc($disease['plant_part_name'] ?? 'N/A') ?></div>
 
+                <?php if (is_admin()): ?>
                 <div class="col actions">
                   <button class="action-btn edit-btn"
                     onclick="openEditDiseaseModal(
@@ -186,6 +222,7 @@
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
+                <?php endif; ?>
               </div>
             <?php endforeach; ?>
           <?php else: ?>
@@ -234,7 +271,12 @@
 
         <div class="form-group">
           <label>Plant Part</label>
-          <input type="text" name="plant_part_id" required>
+          <select name="plant_part_id" required>
+            <option value="">Select Plant Part</option>
+            <?php foreach ($plantParts ?? [] as $plantPart): ?>
+              <option value="<?= esc($plantPart['id']) ?>"><?= esc($plantPart['part']) ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
       </div>
 
@@ -275,7 +317,12 @@
 
         <div class="form-group">
           <label>Plant Part</label>
-          <input type="text" name="plant_part_id" id="edit_plant_part" required>
+          <select name="plant_part_id" id="edit_plant_part" required>
+            <option value="">Select Plant Part</option>
+            <?php foreach ($plantParts ?? [] as $plantPart): ?>
+              <option value="<?= esc($plantPart['id']) ?>"><?= esc($plantPart['part']) ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
       </div>
 

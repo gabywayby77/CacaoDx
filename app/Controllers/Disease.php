@@ -16,7 +16,8 @@ class Disease extends Controller
     }
 
     /**
-     * Show disease list (Available to all users)
+     * Show disease list
+     * All users can see all diseases (it's a reference library)
      */
     public function index()
     {
@@ -28,9 +29,29 @@ class Disease extends Controller
             ($session->get('last_name') ?? '')
         );
 
+        $userId = $session->get('user_id');
+        $isAdmin = is_admin();
+
+        if (!$userId) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        // Get all diseases with plant part names
+        $diseases = $this->diseaseModel->getAllWithPlantParts();
+
+        // Get all plant parts for the dropdown in add/edit forms
+        $db = \Config\Database::connect();
+        $plantParts = $db->table('plant_part')
+            ->select('id, part')
+            ->orderBy('part', 'ASC')
+            ->get()
+            ->getResultArray();
+
         $data = [
-            'userName' => $userName,
-            'diseases' => $this->diseaseModel->findAll(),
+            'userName'   => $userName,
+            'diseases'   => $diseases,
+            'plantParts' => $plantParts,
+            'isAdmin'    => $isAdmin,
         ];
 
         return view('disease', $data);
@@ -50,7 +71,7 @@ class Disease extends Controller
             'name'           => 'required|min_length[3]|max_length[100]',
             'type'           => 'required|max_length[50]',
             'cause'          => 'required|max_length[200]',
-            'plant_part_id'  => 'required',
+            'plant_part_id'  => 'required|is_natural_no_zero',
         ];
 
         if (!$this->validate($rules)) {
@@ -85,7 +106,7 @@ class Disease extends Controller
             'name'           => 'required|min_length[3]|max_length[100]',
             'type'           => 'required|max_length[50]',
             'cause'          => 'required|max_length[200]',
-            'plant_part_id'  => 'required',
+            'plant_part_id'  => 'required|is_natural_no_zero',
         ];
 
         if (!$this->validate($rules)) {

@@ -71,6 +71,14 @@
       </li>
     <?php endif; ?>
 
+    <!-- Add this in your sidebar.php -->
+<li class="<?= ($current_page === 'feedback') ? 'active' : '' ?>">
+  <a href="<?= base_url('feedback'); ?>">
+    <i class="fas fa-comment-dots"></i>
+    <span class="label">Feedback</span>
+  </a>
+</li>
+
   </ul>
 
   <!-- Logout (always visible) -->

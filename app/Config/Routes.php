@@ -128,3 +128,8 @@ $routes->get('settings/delete-account', 'Dashboard::deleteAccount');
     $routes->post('pests/update', 'Pests::update');
     $routes->post('pests/delete', 'Pests::delete');
 });
+
+// Feedback (all authenticated users)
+$routes->get('feedback', 'Feedback::index');
+$routes->post('feedback/submit', 'Feedback::submit');  // Users only
+$routes->post('feedback/delete', 'Feedback::delete');  // Admin only

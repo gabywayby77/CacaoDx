@@ -12,20 +12,28 @@ class Diagnosis extends BaseController
         // Load auth helper for role checks
         helper('auth');
         
+        $session = session();
         $model = new DiagnosisModel();
 
         // Get page number from URL (?page=2)
         $page = $this->request->getVar('page') ?? 1;
         $perPage = 5;
 
-        // Get total count of all records
-        $totalRecords = $model->countAllResults(false);
+        // ✅ USER-SPECIFIC FILTERING
+        $userId = $session->get('user_id');
+        $isAdmin = is_admin();
 
-        // Fetch with pagination
-        $data = $model->getPaginated($perPage, $page);
+        if (!$userId) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        // Get paginated data with user filter
+        $data = $model->getPaginated($perPage, $page, $userId, $isAdmin);
         
-        // Add total records to the data array
-        $data['totalRecords'] = $totalRecords;
+        // Add user info to the data array
+        $data['isAdmin'] = $isAdmin;
+        $data['currentUserId'] = $userId;
+        $data['totalRecords'] = $data['total'];
 
         return view('diagnosis', $data);
     }

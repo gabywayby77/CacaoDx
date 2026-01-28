@@ -28,15 +28,22 @@ class DiagnosisModel extends Model
     }
 
     /**
-     * Get paginated diagnosis with joins
+     * Get paginated diagnosis with joins and user filtering
+     * 
+     * @param int $perPage - Records per page
+     * @param int $page - Current page number
+     * @param int $userId - Current user's ID
+     * @param bool $isAdmin - Whether current user is admin
+     * @return array
      */
-    public function getPaginated($perPage, $page)
+    public function getPaginated($perPage, $page, $userId = null, $isAdmin = false)
     {
         $builder = $this->db->table('diagnosis d');
 
         // Select the correct columns
         $builder->select('
             d.id,
+            d.user_id,
             d.confidence,
             d.notes,
             d.prevention,
@@ -55,7 +62,17 @@ class DiagnosisModel extends Model
         $builder->join('diseases dis', 'dis.id = d.disease_id', 'left');
         $builder->join('treatments t', 't.id = d.treatment_id', 'left');
 
-        // Get total rows for pagination
+        // ✅ USER-SPECIFIC FILTERING
+        // If NOT admin and userId is provided, filter by user_id
+        if (!$isAdmin && $userId) {
+            $builder->where('d.user_id', $userId);
+        }
+        // If admin, show all records (no filter)
+
+        // Order by most recent first
+        $builder->orderBy('d.diagnosis_date', 'DESC');
+
+        // Get total rows for pagination (after filtering)
         $total = $builder->countAllResults(false);
 
         // Apply limit and offset for pagination
@@ -69,5 +86,34 @@ class DiagnosisModel extends Model
             'currentPage' => (int) $page,
             'totalPages'  => ceil($total / $perPage),
         ];
+    }
+
+    /**
+     * Get diagnosis count by user ID
+     */
+    public function countByUserId($userId)
+    {
+        return $this->where('user_id', $userId)->countAllResults();
+    }
+
+    /**
+     * Get recent diagnoses for a user
+     */
+    public function getRecentByUserId($userId, $limit = 5)
+    {
+        $builder = $this->db->table('diagnosis d');
+        
+        $builder->select('
+            d.id,
+            d.confidence,
+            d.diagnosis_date,
+            dis.name AS disease_name
+        ')
+        ->join('diseases dis', 'dis.id = d.disease_id', 'left')
+        ->where('d.user_id', $userId)
+        ->orderBy('d.diagnosis_date', 'DESC')
+        ->limit($limit);
+
+        return $builder->get()->getResultArray();
     }
 }
